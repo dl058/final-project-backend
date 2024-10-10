@@ -25,12 +25,12 @@ AccountRouter.get("/account", async (req, res) => {
 // get Account by ID
 AccountRouter.get("/account/:id", async (req, res) => {
   try {
-    const _id: ObjectId = new ObjectId(req.params.id);
+    const uid: string = req.params.id;
     const client = await getClient();
     const Account = await client
       .db()
       .collection<Account>("accounts")
-      .findOne({ _id });
+      .findOne({ uid });
     if (Account) {
       res.status(200).json(Account);
     } else {
