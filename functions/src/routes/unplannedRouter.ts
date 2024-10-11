@@ -2,6 +2,7 @@ import express from "express";
 import { getClient } from "../db";
 import { ObjectId } from "mongodb";
 import Account from "../models/Account";
+import TravelEvent from "../models/TravelEvent";
 
 const AccountRouter = express.Router();
 
@@ -93,5 +94,42 @@ AccountRouter.put("/account/:id", async (req, res) => {
     errorResponse(err, res);
   }
 });
+AccountRouter.patch("/account/:id", async (req, res) => {
+  try {
+    const _id: ObjectId = new ObjectId(req.params.id);
+    const newEvent: TravelEvent = req.body;
 
+    const client = await getClient();
+    const result = await client
+      .db()
+      .collection<Account>("accounts")
+      .updateOne({ _id }, { $push: { favorites: newEvent } });
+    if (result.modifiedCount) {
+      res.status(200).json(newEvent);
+    } else {
+      res.status(404).json({ message: "Not Found" });
+    }
+  } catch (err) {
+    errorResponse(err, res);
+  }
+});
+AccountRouter.patch("/account/remove-favorite/:id", async (req, res) => {
+  try {
+    const _id: ObjectId = new ObjectId(req.params.id);
+    const newEventId: string = req.body.eventId;
+
+    const client = await getClient();
+    const result = await client
+      .db()
+      .collection<Account>("accounts")
+      .updateOne({ _id }, { $pull: { favorites: { id: newEventId } } });
+    if (result.modifiedCount) {
+      res.status(200).json(newEventId);
+    } else {
+      res.status(404).json({ message: "Not Found" });
+    }
+  } catch (err) {
+    errorResponse(err, res);
+  }
+});
 export default AccountRouter;
